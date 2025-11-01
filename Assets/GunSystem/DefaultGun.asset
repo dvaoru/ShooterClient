@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5cd0633ac108fa429362bcbc348878e, type: 3}
+  m_Name: DefaultGun
+  m_EditorClassIdentifier: Assembly-CSharp::GunSettings
+  ShootDelay: 0.5
+  Damage: 10
+  BulletSpeed: 20
+  BulletPrefab: {fileID: -2639703516892264672, guid: 795745ed8c00de545b89268032a61f5b, type: 3}
+  _bulletPoint: {fileID: 0}

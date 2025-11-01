@@ -7,6 +7,11 @@ public class GunAnimation : MonoBehaviour
     [SerializeField] private Gun _gun;
     [SerializeField] private Animator _animator;
 
+    public void SetAnimator(Animator animator)
+    {
+        _animator = animator;
+    }
+
     void Start()
     {
         _gun.shoot += Shoot;

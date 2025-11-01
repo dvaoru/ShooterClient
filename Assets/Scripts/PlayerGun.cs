@@ -12,7 +12,14 @@ public class PlayerGun : Gun
     [SerializeField] private int _damage;
     private float _lastShootTime = 0;
    
-
+    public override void ImplementSettings(GunSettings gunSettings)
+    {
+        _bulletSpeed = gunSettings.BulletSpeed;
+        _shootDelay = gunSettings.ShootDelay;
+        _damage = gunSettings.Damage;
+        _bulletPoint = gunSettings.BulletPoint;
+        _bulletPrefab = gunSettings.BulletPrefab;
+    }
 
     public bool TryShoot(out ShootInfo info)
     {

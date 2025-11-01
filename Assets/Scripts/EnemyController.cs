@@ -7,6 +7,8 @@ public class EnemyController : MonoBehaviour
 {
     [SerializeField] private EnemyCharacter _character;
     [SerializeField] private EnemyGun _gun;
+
+    [SerializeField] private GunSystem _gunSystem;
     private List<float> _receiveTimeInterval = new List<float> { 0, 0, 0, 0, 0 };
     private float AverageInterval
     {
@@ -108,5 +110,10 @@ public class EnemyController : MonoBehaviour
             }
         }
         _character.SetMovement(position, velocity, AverageInterval);
+    }
+
+    internal void ChangeGun(int i)
+    {
+        _gunSystem.SetGun(i);
     }
 }

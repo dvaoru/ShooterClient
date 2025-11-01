@@ -8,6 +8,7 @@ public class Controller : MonoBehaviour
     [SerializeField] private float _restartDelay = 3f;
     [SerializeField] private PlayerCharacter _player;
     [SerializeField] private PlayerGun _gun;
+    [SerializeField] private GunSystem _gunSystem;
     [SerializeField] private float _mouseSensetivity = 2f;
 
     private bool _hold = false;
@@ -40,8 +41,25 @@ public class Controller : MonoBehaviour
 
         if (isShoot && _gun.TryShoot(out ShootInfo shootInfo)) SendShoot(ref shootInfo);
 
+        if (Input.GetMouseButtonUp(1))
+        {
+            var gunIndex = _gunSystem.UseNextGun();
+            SendGunChange(gunIndex);
+        }
+
 
         SendMove();
+    }
+
+    private void SendGunChange(int gunIndex)
+    {
+        var gunInfo = new GunInfo()
+        {
+            key = _multiplayerManager.GetSessionID(),
+            i = gunIndex
+        };
+        string json = JsonUtility.ToJson(gunInfo);
+        _multiplayerManager.SendMessage("change", json);
     }
 
     private void SendShoot(ref ShootInfo shootInfo)
@@ -74,7 +92,7 @@ public class Controller : MonoBehaviour
         StartCoroutine(Hold());
         _player.transform.position = new Vector3(info.x, 0, info.z);
         _player.SetInput(0, 0, 0);
-          Dictionary<string, object> data = new Dictionary<string, object>
+        Dictionary<string, object> data = new Dictionary<string, object>
         {
             { "pX", info.x },
             { "pY", 0 },
@@ -114,4 +132,11 @@ public struct RestartInfo
 {
     public float x;
     public float z;
+}
+
+[Serializable]
+public struct GunInfo
+{
+    public string key;
+    public int i;
 }

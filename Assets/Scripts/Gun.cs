@@ -4,5 +4,7 @@ using UnityEngine;
 public abstract class Gun : MonoBehaviour
 {
     [SerializeField] protected Bullet _bulletPrefab;
-     public Action shoot;
+    public Action shoot;
+
+    abstract public void ImplementSettings(GunSettings gunSettings);
 }
