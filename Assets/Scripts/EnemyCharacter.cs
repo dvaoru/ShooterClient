@@ -1,21 +1,32 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyCharacter : Character
+
+
 {
+    [SerializeField] private Health _health;
     [SerializeField] private Transform _head;
+    private string _sessionId;
     public Vector3 targetPosition { get; private set; } = Vector3.zero;
     private float _velocityMagnitude = 0;
 
     private RotatePredictor _rotatePredictorX = new RotatePredictor();
     private RotatePredictor _rotatePredictorY = new RotatePredictor();
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+
+    public void Init(string sessionID)
+    {
+        _sessionId = sessionID;
+    }
     void Start()
     {
         targetPosition = transform.position;
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         if (_velocityMagnitude > .1f)
@@ -37,9 +48,17 @@ public class EnemyCharacter : Character
         speed = value;
     }
 
+    public void SetMaxHP(int value)
+    {
+        maxHealth = value;
+        _health.SetMax(value);
+        _health.SetCurrent(value);
+    }
+
+
     public void SetMovement(in Vector3 position, in Vector3 velocity, in float averageInterval)
     {
-        targetPosition = position + velocity * averageInterval;
+        targetPosition = position + velocity * Mathf.Clamp(averageInterval, 0, 0.2f);
         _velocityMagnitude = velocity.magnitude;
 
         this.velocity = velocity;
@@ -84,8 +103,24 @@ public class EnemyCharacter : Character
         {
             var predictionTime = 0.1f; //Предсказываем поворот на 100 мс
             float smoothSpeed = 180f; //Для сглаживания делаем скорость поворота 180 град/сек
-            float predicted = _lastRotate + _angularSpeed * predictionTime;            
+            float predicted = _lastRotate + _angularSpeed * predictionTime;
             return Mathf.MoveTowardsAngle(currentRotation, predicted, smoothSpeed * Time.deltaTime);
         }
+    }
+
+    public void ApplyDamage(int damage)
+    {
+        _health.ApplyDamage(damage);
+        Dictionary<string, object> data = new Dictionary<string, object>
+        {
+            {"id", _sessionId},
+            {"value", damage}
+        };
+        MultiplayerManager.Instance.SendMessage("damage", data);
+    }
+
+    internal void RestoreHP(int newValue)
+    {
+        _health.SetCurrent(newValue);
     }
 }

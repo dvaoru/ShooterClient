@@ -1,30 +1,27 @@
+using System;
+using System.Collections.Generic;
+using Colyseus.Schema;
 using UnityEngine;
 
 public class PlayerCharacter : Character
 {
-    [SerializeField]
-    private Rigidbody _rigidbody;
 
-    [SerializeField]
-    private Transform _head;
+    [SerializeField] private Health _health;
+    [SerializeField] private Rigidbody _rigidbody;
 
-    [SerializeField]
-    private Transform _cameraPoint;
+    [SerializeField] private Transform _head;
 
-    [SerializeField]
-    private float _maxHeadAngle = 90;
+    [SerializeField] private Transform _cameraPoint;
 
-    [SerializeField]
-    private float _minHeadAngle = -90;
+    [SerializeField] private float _maxHeadAngle = 90;
 
-    [SerializeField]
-    private float _jumpForce = 50f;
+    [SerializeField] private float _minHeadAngle = -90;
 
-    [SerializeField]
-    private float _jumpDelay = 0.2f;
+    [SerializeField] private float _jumpForce = 50f;
 
-    [SerializeField]
-    private CheckFly _checkFly;
+    [SerializeField] private float _jumpDelay = 0.2f;
+
+    [SerializeField] private CheckFly _checkFly;
     private float _jumpTime;
 
     private float _inputH;
@@ -38,6 +35,8 @@ public class PlayerCharacter : Character
         camera.parent = _cameraPoint;
         camera.localPosition = Vector3.zero;
         camera.localRotation = Quaternion.identity;
+        _health.SetMax(maxHealth);
+        _health.SetCurrent(maxHealth);
     }
 
     public void SetInput(float h, float v, float rotateY)
@@ -75,7 +74,7 @@ public class PlayerCharacter : Character
         _rotateY = 0;
     }
 
-    public void GetMoveInfo(out Vector3 position, out Vector3 velocity,  out float rotateX, out float rotateY)
+    public void GetMoveInfo(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY)
     {
         position = transform.position;
         velocity = _rigidbody.linearVelocity;
@@ -90,5 +89,28 @@ public class PlayerCharacter : Character
         if (Time.time - _jumpDelay < _jumpDelay)
             return;
         _rigidbody.AddForce(0, _jumpForce, 0, ForceMode.VelocityChange);
+    }
+
+    internal void OnChange(List<DataChange> changes)
+    {
+        foreach (var dataChange in changes)
+        {
+            switch (dataChange.Field)
+            {
+                case "loss":
+                    MultiplayerManager.Instance._lossCounter.SetPlayerLoss((byte)dataChange.Value);
+                    break;
+
+                case "currentHP":
+                    Debug.Log("Current xp = " + (sbyte)dataChange.Value);
+                    _health.SetCurrent((sbyte)dataChange.Value);
+                    break;
+
+
+                default:
+                    Debug.LogWarning("Не обрабатывается поле " + dataChange.Field);
+                    break;
+            }
+        }
     }
 }
