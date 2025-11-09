@@ -12,26 +12,47 @@ public class Controller : MonoBehaviour
     [SerializeField] private float _mouseSensetivity = 2f;
 
     private bool _hold = false;
+    private bool _hideCursor;
 
     private MultiplayerManager _multiplayerManager;
 
-    void Start()
+    private void Start()
     {
         _multiplayerManager = MultiplayerManager.Instance;
+        _hideCursor = true;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            _hideCursor = !_hideCursor;
+            Cursor.lockState = _hideCursor ? CursorLockMode.Locked : CursorLockMode.None;
+        }
         if (_hold) return;
 
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        float mouseX = 0;
+        float mouseY = 0;
+        bool isShoot = false;
 
-        bool isShoot = Input.GetMouseButton(0);
+        if (_hideCursor)
+        {
+            mouseX = Input.GetAxis("Mouse X");
+            mouseY = Input.GetAxis("Mouse Y");
+            isShoot = Input.GetMouseButton(0);
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                var gunIndex = _gunSystem.UseNextGun();
+                SendGunChange(gunIndex);
+            }
+        }
+
+
 
         bool space = Input.GetKeyDown(KeyCode.Space);
 
@@ -41,11 +62,7 @@ public class Controller : MonoBehaviour
 
         if (isShoot && _gun.TryShoot(out ShootInfo shootInfo)) SendShoot(ref shootInfo);
 
-        if (Input.GetMouseButtonUp(1))
-        {
-            var gunIndex = _gunSystem.UseNextGun();
-            SendGunChange(gunIndex);
-        }
+
 
 
         SendMove();
@@ -53,13 +70,13 @@ public class Controller : MonoBehaviour
 
     private void SendGunChange(int gunIndex)
     {
-        var gunInfo = new GunInfo()
-        {
-            key = _multiplayerManager.GetSessionID(),
-            i = gunIndex
-        };
-        string json = JsonUtility.ToJson(gunInfo);
-        _multiplayerManager.SendMessage("change", json);
+        // var gunInfo = new GunInfo()
+        // {
+        //     key = _multiplayerManager.GetSessionID(),
+        //     i = gunIndex
+        // };
+        // string json = JsonUtility.ToJson(gunInfo);
+        // _multiplayerManager.SendMessage("change", json);
     }
 
     private void SendShoot(ref ShootInfo shootInfo)
@@ -86,22 +103,26 @@ public class Controller : MonoBehaviour
         _multiplayerManager.SendMessage("move", data);
     }
 
-    public void Restart(string jsonRestarInfo)
+    public void Restart(int spawnIndex)
     {
-        RestartInfo info = JsonUtility.FromJson<RestartInfo>(jsonRestarInfo);
+        _multiplayerManager._spawnPoints.GetPoint(spawnIndex, out Vector3 position, out Vector3 rotation);
+        
         StartCoroutine(Hold());
-        _player.transform.position = new Vector3(info.x, 0, info.z);
+        _player.transform.position = position;
+        rotation.x = 0;
+        rotation.z = 0;
+        _player.transform.eulerAngles = rotation;
         _player.SetInput(0, 0, 0);
         Dictionary<string, object> data = new Dictionary<string, object>
         {
-            { "pX", info.x },
-            { "pY", 0 },
-            { "pZ", info.z },
+            { "pX", position.x },
+            { "pY", position.y },
+            { "pZ", position.z },
             { "vX", 0 },
             { "vY", 0 },
             { "vZ", 0 },
             {"rX", 0},
-            {"rY", 0}
+            {"rY", rotation.y}
 
         };
         _multiplayerManager.SendMessage("move", data);

@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,12 +8,17 @@ public class EnemyCharacter : Character
 {
     [SerializeField] private Health _health;
     [SerializeField] private Transform _head;
+
+    [SerializeField] private ParticleSystem _headshootEffect;
+    [SerializeField] private ParticleSystem _hitEffect;
     private string _sessionId;
     public Vector3 targetPosition { get; private set; } = Vector3.zero;
     private float _velocityMagnitude = 0;
 
     private RotatePredictor _rotatePredictorX = new RotatePredictor();
     private RotatePredictor _rotatePredictorY = new RotatePredictor();
+
+
 
 
 
@@ -108,8 +113,13 @@ public class EnemyCharacter : Character
         }
     }
 
-    public void ApplyDamage(int damage)
+    public void ApplyDamage(int damage, Vector3 position, bool isHeadshoot)
     {
+        var effect = Instantiate(
+            isHeadshoot ? _headshootEffect : _hitEffect,
+             position,
+             Quaternion.identity);
+        effect.Play();
         _health.ApplyDamage(damage);
         Dictionary<string, object> data = new Dictionary<string, object>
         {
