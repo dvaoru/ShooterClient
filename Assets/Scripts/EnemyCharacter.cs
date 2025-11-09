@@ -11,6 +11,7 @@ public class EnemyCharacter : Character
 
     [SerializeField] private ParticleSystem _headshootEffect;
     [SerializeField] private ParticleSystem _hitEffect;
+    
     private string _sessionId;
     public Vector3 targetPosition { get; private set; } = Vector3.zero;
     private float _velocityMagnitude = 0;
@@ -26,13 +27,13 @@ public class EnemyCharacter : Character
     {
         _sessionId = sessionID;
     }
-    void Start()
+    public void Start()
     {
         targetPosition = transform.position;
     }
 
 
-    void Update()
+    public void Update()
     {
         if (_velocityMagnitude > .1f)
         {
